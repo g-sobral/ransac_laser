@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 
 		int t = 1;
 		// reject first line! -- parameters from sensor
-		fgets(buffer,BUFFSIZE,data);
+//		fgets(buffer,BUFFSIZE,data);
 		while(!feof(data))
 		{
 			if(fgets(buffer,BUFFSIZE,data))
@@ -102,15 +102,15 @@ int main(int argc, char **argv)
 				cleanUpData(polarM, cartM, dataWidth, nCols, dataL,
 							dataR, &nl, &nr);
 
-				ransac2Dline(dataL, nCols, nl, maxT, threshold, lineL,
+				ransac_2Dline(dataL, nCols, nl, (nl/2)-1, threshold, lineL,
 							 &inliersL, 1);
 
-				ransac2Dline(dataR, nCols, nr, maxT, threshold, lineR,
+				ransac_2Dline(dataR, nCols, nr, (nr/2)-1, threshold, lineR,
 							 &inliersR, 1);
 
 				if(lineL[0] && lineR[0])
 				{
-					intersectionPoint(line_l, line_r, trajectory);
+					//intersectionPoint(line_l, line_r, trajectory);
 				    //bisectrixLine(line_l, line_r, trajectory);
 				}
 				else

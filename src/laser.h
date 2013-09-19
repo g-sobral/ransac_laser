@@ -53,7 +53,7 @@ void makeTheta(int n, float ang, float *theta);
 			  linha 0 contem os valores para a coordenada x
 			  e a linha 1 contem os valores para a coordenada y
 */
-void polar2cartesian(float *M_pol, float *theta, int n, float *M_car);
+void polar2cartesian(float *polarM, float *theta, int n, float *cartM);
 
 
 /* cleanUpData - Limpa e prepara os dados para a execução do RANSAC
@@ -77,8 +77,8 @@ void polar2cartesian(float *M_pol, float *theta, int n, float *M_car);
 	nl			: quantidade de pontos a esquerda
 	nr			: quantidade de pontos a direita
 */
-void cleanUpData(float *M_pol, float *M_car, int dataWidth, int n, float *Data_l,
-				 float *Data_r, int *nl, int *nr);
+void cleanUpData(float *polarM, float *cartM, int dataWidth, int n, 
+				 float *dataL, float *dataR, int *nl, int *nr);
 
 /* intersectionPoint - calcula o ponto de interseccao de duas linhas, cada uma 
 delas
@@ -92,7 +92,7 @@ delas
     l3  : retorna uma reta que varia X de -15 a 15, passando pelo ponto (0,0)
         e pela interseccao (x1, x2, y1, y2)
 */
-void intersectionPoint(float *l1, float *l2, float *l3);
+void intersectionPoint(float *model1, float *model2, float *point);
 
 
 /* bisectrixLine - calcula a bissetriz entre as duas retas do RANSAC
