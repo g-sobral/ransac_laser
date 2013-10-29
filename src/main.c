@@ -66,6 +66,7 @@ int main(int argc, char **argv)
 
 //---- inicializa variaveis ----
 	int nl, nr, i;
+
 	float angRad = angDeg*(2*PI/360);
 	char buffer[BUFFSIZE];
 
@@ -100,6 +101,7 @@ int main(int argc, char **argv)
 		int t = 1;
 		// reject first line! -- parameters from sensor
 		fgets(buffer,BUFFSIZE,data);
+
 		while(!feof(data))
 		{
 			if(fgets(buffer,BUFFSIZE,data))
