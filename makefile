@@ -23,6 +23,6 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@echo " CC $<"; $(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	@echo " Cleaning..."; rm -r $(BUILDDIR) $(EXEC)
+	@echo " Cleaning..."; rm -rf $(BUILDDIR) $(EXEC); rm -f $(SRCDIR)/*~
 
 ##############################################################################

@@ -5,23 +5,26 @@
 
 	Autor: Gabriel S. Sobral <gasan.sobral@gmail.com>, 2012
 
-	revisao 2.0 - por Renato Martins <renatojmsdh@gmail.com>
+	revisao 1sem/2013 - por Renato Martins <renatojmsdh@gmail.com>
 		Implementacao das funcoes laserRansacFinal para FPGA
          * com base no codigo original + cálculo de bissetriz;
          * representa matrizes+vetores estaticamente de forma simples
-
+         
+    revisao 2sem/2013 - por Gabriel S. Sobral <gasan.sobral@gmail.com>
+		Implementacao do algoritmo ransac com estimativa do modelo
+		através de decomposição SVD.
+		
 	COMPILAR: $ make all
 
-	EXECUTAR: $ ./ransacFPGA p1 p2 p3 p4 p5 p6
+	EXECUTAR: $ ./ransacFPGA p1 p2 p3 p4 p5
 
 			p1: arquivo contendo os pontos do sensor laser
 			p2: numero de pontos por leitura
 			p3: angulo de leitura em graus
 			p4: largura do corredor
 			p5: threshold para o algoritmo RANSAC
-			p6: porcentagem de inliers para o algoritmo RANSAC
 
-	EXEMPLO: $ ./ransacFPGA [path2VeroLidarData].log 1081 270 8 1.5 0.55
+	EXEMPLO: $ ./ransacFPGA [path2VeroLidarData].log 1081 270 8 1.5
 
 */
 
@@ -42,7 +45,7 @@ int main(int argc, char **argv)
 				" p3: [int] angulo de leitura em graus \n"
 				" p4: [int] largura do corredor \n"
 				" p5: [float] threshold para o algoritmo RANSAC \n"
-				" EXEMPLO: $ %s [path2VeroLidarData].log 1081 270 8 1.5 0.55 \n\n",
+				" EXEMPLO: $ %s [path2VeroLidarData].log 1081 270 8 1.5\n\n",
 				argv[0], argv[0]);
 		exit(1);
 	}
