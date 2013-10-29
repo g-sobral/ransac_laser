@@ -37,35 +37,35 @@ void makeTheta(int n, float ang, float *theta) {
 		theta[i] = init + (i * inc);
 }
 
-void polar2cartesian(float *M_pol, float *theta, int n, float *M_car) {
+void polar2cartesian(float *polarM, float *theta, int n, float *cartM) {
 	for(int i = 0; i < n; i++)
 	{
-		M_car[i] = M_pol[i]*cos(theta[i]);    //linha 1
-		M_car[n+i] = M_pol[i]*sin(theta[i]);  //linha 2
+		cartM[i] = polarM[i]*cos(theta[i]);    //linha 1
+		cartM[n+i] = polarM[i]*sin(theta[i]);  //linha 2
 	}
 }
 
-void cleanUpData(float *M_pol, float *M_car, int dataWidth, int n, float *Data_l,
-				 float *Data_r, int *nl, int *nr) {
+void cleanUpData(float *polarM, float *cartM, int dataWidth, int n, float *dataL,
+				 float *dataR, int *nl, int *nr) {
 	int i_r=0, i_l=0;
 	int rangeMax = 4*dataWidth;
 
 	for(int i = 0; i < n; i++)
 	{
-		if(M_pol[i] != 0 && M_pol[i] <= rangeMax)
+		if(polarM[i] != 0 && polarM[i] <= rangeMax)
 		{
-			if(M_car[i] >= 0 && M_car[i] <= dataWidth)
+			if(cartM[i] >= 0 && cartM[i] <= dataWidth)
 			{
-				Data_r[i_r] = M_car[i];
-				Data_r[n+i_r] = M_car[n + i];
-				//Be aware: matrix M_car must be used as vector
+				dataR[i_r] = cartM[i];
+				dataR[n+i_r] = cartM[n + i];
+				//Be aware: matrix cartM must be used as vector
 				i_r += 1;
 			}
-			else if(M_car[i] <= 0 && M_car[i] >= -dataWidth)
+			else if(cartM[i] <= 0 && cartM[i] >= -dataWidth)
 			{
-				Data_l[i_l] = M_car[i];
-				Data_l[n+i_l] = M_car[n + i];
-				//Be aware: matrix M_car must be used as vector
+				dataL[i_l] = cartM[i];
+				dataL[n+i_l] = cartM[n + i];
+				//Be aware: matrix cartM must be used as vector
 				i_l += 1;
 			}
 		}
@@ -77,48 +77,41 @@ void cleanUpData(float *M_pol, float *M_car, int dataWidth, int n, float *Data_l
 	/*
 	if(t == 10)
 	{
-	        printf("Data_l x with %d pontos\n",nl);
-	        printMat1(Data_lx, 1, nl);
-	        printf("Data_r x with %d pontos\n",nr);
-	        printMat1(Data_rx, 1, nr);
+	        printf("dataL x with %d pontos\n",nl);
+	        printMat1(dataLx, 1, nl);
+	        printf("dataR x with %d pontos\n",nr);
+	        printMat1(dataRx, 1, nr);
 	        return 0;
 	}
 	printf("Numero de colunas MATL%d \n", *nl);
-	printMat1(&Data_l[0], 2, *nl);
+	printMat1(&dataL[0], 2, *nl);
 	printf("Numero de colunas MATR%d \n", *nr);
-	printMat1(&Data_r[0], 2, *nr);
+	printMat1(&dataR[0], 2, *nr);
 	*/
 }
 
-void intersectionPoint(float *l1, float *l2, float *l3) {
-    // linha 1 formada pelos pontos (x1,y1) e (x2,y2)
-    // linha 2 formada pelos pontos (x3,y3) e (x4,y4)
-    float x1 = l1[0];
-    float x2 = l1[1];
-    float y1 = l1[2];
-    float y2 = l1[3];
-    float x3 = l2[0];
-    float x4 = l2[1];
-    float y3 = l2[2];
-    float y4 = l2[3];
+void intersectionPoint(float *model1, float *model2, float *point) {
+    // linha: a*x + b*y + c = 0
+    // y = -(a/b)*x - (c/b) = alpha*x + beta
 
-    float v0 = 0;
-    float v1 = 0;
+    float alpha1 = -(model1[0]/model1[1]);
+    float beta1 = -(model1[2]/model1[1]);
+    float alpha2 = -(model2[0]/model2[1]);
+    float beta2 = -(model2[2]/model2[1]);
 
     // coordenada X do ponto de interseccao
-    v0 = (((x1*y2-y1*x2)*(x3-x4)-(x3*y4-y3*x4)*(x1-x2))/\
-        ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)));
+    point[0] = (beta2 - beta1)/(alpha1 - alpha2);
 
     // coordenada Y do ponto de interseccao
-    v1 = (((x1*y2-y1*x2)*(y3-y4)-(x3*y4-y3*x4)*(y1-y2))/\
-        ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)));
+	point[1] = alpha1*point[0] + beta1;
 
-    // retorna uma reta que varia X de -15 a 15, passando pelo ponto (0,0)
-    // e pela interseccao
-    l3[0] = -15;
-    l3[1] = 15;
-    l3[2] = v1/v0*l3[0];
-    l3[3] = v1/v0*l3[1];
+}
+
+void model2line(float *model, float *line) {
+	line[2] = -15;
+	line[3] = 15;
+	line[0] = -(model[1]/model[0])*line[2] - (model[2]/model[0]);
+	line[1] = -(model[1]/model[0])*line[3] - (model[2]/model[0]);
 }
 
 void bisectrixLine(float *l1, float *l2, float *l3) {

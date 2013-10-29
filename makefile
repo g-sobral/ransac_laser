@@ -1,26 +1,28 @@
 ##############################################################################
+SHELL = /bin/sh
 
-CC=gcc
-CFLAGS=-std=c99 -Wall -pedantic -O3
-LDFLAGS=-lm
+CC := gcc
+CFLAGS := -std=c99 -Wall -pedantic -O3
+LDFLAGS := -lm
 
-DEPS=laser.h ransac.h
-SOURCES=main.c laser.c ransac.c
-OBJ=$(SOURCES:.c=.o)
+SRCDIR := src
+BUILDDIR := build
+SRCEXT := c
+EXEC := ransacLaser
 
-EXECUTABLE=ransacFPGA
+SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
-all : $(EXECUTABLE)
+all : $(EXEC)
 
-$(EXECUTABLE) : $(OBJ)
-	${CC} -o $@ $^ ${CFLAGS} ${LDFLAGS}
-	@echo
+$(EXEC): $(OBJECTS)
+	@echo " Linking..."; $(CC) -o $@ $^ $(LDFLAGS)
 
-%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
-	@echo
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	@mkdir -p $(BUILDDIR)
+	@echo " CC $<"; $(CC) $(CFLAGS) -c -o $@ $<
 
-clean :
-	rm -f ${EXECUTABLE} *.o *~
+clean:
+	@echo " Cleaning..."; rm -r $(BUILDDIR) $(EXEC)
 
 ##############################################################################

@@ -65,28 +65,36 @@ int main(int argc, char **argv)
 	  { fprintf(stderr,"parametro 5 invalido: %s\n",argv[5]); exit(1); }
 
 //---- inicializa variaveis ----
-	int nl, nr;
+	int nl, nr, i;
 	float angRad = angDeg*(2*PI/360);
 	char buffer[BUFFSIZE];
 
 	float polarM[nCols];
 	float theta[nCols];
+	float modelL[3];
+	float modelR[3];
+	float intersec[2];
+	float lineL[4];
+	float lineR[4];
+	float lineTraj[4];
+	
 	float cartM[2*nCols];
 	float dataL[2*nCols];
 	float dataR[2*nCols];
-	float lineL[3];
-	float lineR[3];
-	float lineTraj[4];
+	
+	float **dR, **dL;
 
 	int inliersL = 0;
 	int inliersR = 0;
+	
+	int ret = 0;
 
 	FILE *data;
 
 	data = fopen(dataPath, "r");
 	if(data)
 	{
-		printf("Lendo dados do arquivo %s\n",dataPath);
+		// printf("Lendo dados do arquivo %s\n",dataPath);
 		makeTheta(nCols, angRad, theta);
 
 		int t = 1;
@@ -98,31 +106,78 @@ int main(int argc, char **argv)
 			{
 				getPoints(buffer, nCols, polarM);
 				polar2cartesian(polarM, theta, nCols, cartM);
-
+				
+				/*
+				for(i = 0; i < 2*nCols; i++)
+					printf("%f, ", cartM[i]);
+				printf("\n");
+				*/
+				
 				cleanUpData(polarM, cartM, dataWidth, nCols, dataL,
 							dataR, &nl, &nr);
-
-				ransac2Dline(dataL, nCols, nl, maxT, threshold, lineL,
-							 &inliersL, 1);
-
-				ransac2Dline(dataR, nCols, nr, maxT, threshold, lineR,
-							 &inliersR, 1);
-
-				if(lineL[0] && lineR[0])
+				
+				dR = malloc(nr * sizeof(float *));
+				if(dR == NULL) { perror("out of memory\n"); exit(0); }
+				for(i = 0; i < nr; i++)
 				{
-					intersectionPoint(line_l, line_r, trajectory);
-				    //bisectrixLine(line_l, line_r, trajectory);
+					dR[i] = malloc(2 * sizeof(float));
+					if(dR[i] == NULL) { perror("out of memory\n"); exit(0); }
+					dR[i][0] = dataR[i];
+					dR[i][1] = dataR[nCols + i];
+				}
+				
+				dL = malloc(nl * sizeof(float *));
+				if(dL == NULL) { perror("out of memory\n"); exit(0); }
+				for(i = 0; i < nl; i++)
+				{
+					dL[i] = malloc(2 * sizeof(float));
+					if(dL[i] == NULL) { perror("out of memory\n"); exit(0); }
+					dL[i][0] = dataL[i];
+					dL[i][1] = dataL[nCols + i];
+				}
+	
+				ret = ransac_2Dline(dR, nr, (nr/2)-1, threshold, modelR,
+							 &inliersR, 0);
+
+				ret += ransac_2Dline(dL, nl, (nl/2)-1, threshold, modelL,
+							 &inliersL, 0);
+							 
+				for(i = 0; i < nr; i++)
+					free(dR[i]);
+				free(dR);
+				
+				for(i = 0; i < nl; i++)
+					free(dL[i]);
+				free(dL);
+
+				if(ret == 0)
+				{
+					intersectionPoint(modelL, modelR, intersec);
+				    model2line(modelL, lineL);
+				    model2line(modelR, lineR);
+				    bisectrixLine(lineL, lineR, lineTraj);
+				    
+				    //printf("\nLinha #%d\n", t);
+					//printf("RANSAC left side: %.3f*x + %.3f*y + %.3f = 0; inliers = %d\n", 								modelL[0], modelL[1], modelL[2], inliersL);
+					//printf("RANSAC right side: %.3f*x + %.3f*y + %.3f = 0; inliers = %d\n", 								modelR[0], modelR[1], modelR[2], inliersR);
+					//printf("Intersection point: [%.3f; %.3f]\n", intersec[0], intersec[1]);
+					//printf("Bisectrix line: [(%.3f; %.3f) (%.3f; %.3f)]\n", 							lineTraj[0], lineTraj[2], lineTraj[1], lineTraj[3]);
+					printf("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f\n", \
+							modelL[0], modelL[1], modelL[2], \
+							modelR[0], modelR[1], modelR[2], \
+							lineTraj[0], lineTraj[1], lineTraj[2], lineTraj[3], \
+							intersec[0], intersec[1]);
 				}
 				else
 					fprintf(stderr,"linha nao detectada na iteracao %d\n",t);
 
 				t++;
 			}
-			else
+			/*else
 			{
                 fprintf(stderr,"Problema ao ler o arquivo na linha %d\n",t);
                 exit(1);
-			}
+			}*/
 		}
 		printf("Fim do arquivo.\n");
 	}
